@@ -88,13 +88,7 @@ export interface IMenuData {
   [key: string]: any
 }
 
-function htmlUrlTransformer(url: string) {
-  const [pathName, extension] = (url || '').split('.')
 
-  const pageName = extension === 'html' ? pathName : pathName
-
-  return [`/${pathName}`, extension, pageName]
-}
 
 /**
  *
@@ -102,6 +96,7 @@ function htmlUrlTransformer(url: string) {
  */
 export default function (
   menuData: Record<string, any>[],
+  num:number
 ):MenuDataItem[] {
   // menu根标识
   const MENU_ROOT = 'menu_root'
@@ -112,25 +107,14 @@ export default function (
 
   // 对Menus数据进行分组
   menuData.forEach((item) => {
-    const [pathName, , pageName] = htmlUrlTransformer(item.resource || '')
-
-
-    const menuItem = {
+    const menuItem = new Array(num).fill({
       ...item,
-      // i18n : formatMessage的id值,
-      locale: item.parent
-        ? `menu.${item.parent}.${item.name}`
-        : `menu.${item.name}`,
-      key: item.name,
-      name: item.label,
-      path: pathName,
-      app: `original_${pageName}`,
-      type: item.type || PageType.Html,
-    }
+    }).map(item=>({...item,
+      ModelID:new Date().getTime()+Math.random().toString(16),
+      }))
     const data = menuGroupMap.get(item.parent || MENU_ROOT) || []
-    menuGroupMap.set(item.parent || MENU_ROOT, [...data, menuItem])
+    menuGroupMap.set(item.parent || MENU_ROOT, [...data,...menuItem])
   })
-  console.log('menuGroupMap',menuGroupMap)
   // 组装menu树
   menuGroupMap.forEach((item, key) => {
     const menuItem = item.sort((a, b) => (a.order || 0) - (b.order || 0))
@@ -143,8 +127,6 @@ export default function (
 
     if (!parent) return
     parent.children = [...menuItem]
-    // @ts-ignore
-    parent.routes = [...menuItem]
   })
 
   return menus
