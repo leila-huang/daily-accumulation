@@ -1,12 +1,14 @@
-import "./styles.css";
-import MenuTree from './menuTree'
+import './styles.css'
+import React from 'react'
+import { Button, Card } from 'antd'
+import { Link } from 'react-router-dom'
 
 export default function App() {
   return (
-    <div className="App">
-      <h1>Hello CodeSandbox</h1>
-      <h2>Star editing to see some magic happen!</h2>
-      <MenuTree />
-    </div>
-  );
+    <Card className="App">
+      <Button>
+        <Link to={'/MenuTree'}> 递归&广度查找tree数据的速度对比</Link>
+      </Button>
+    </Card>
+  )
 }
