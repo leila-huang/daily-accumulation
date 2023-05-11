@@ -7,7 +7,7 @@ module.exports = {
         "eslint:recommended",
         "plugin:react/recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:prettier/recommended"
+
     ],
     "overrides": [
     ],
@@ -19,6 +19,9 @@ module.exports = {
     "plugins": [
         "react",
         "@typescript-eslint"
+    ],
+    "presets": [
+        "@babel/preset-env"
     ],
     "rules": {
     }
