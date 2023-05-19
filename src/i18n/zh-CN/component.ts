@@ -61,6 +61,11 @@ export default {
       "titleExtra": "清除记录",
       "fileReady": "文件已准备好",
       "downloadBtn": "下载"
+    },
+    "qrcode": {
+      "expired": "二维码已失效",
+      "refresh": "刷新",
+      "error": "获取二维码异常"
     }
   }
 };

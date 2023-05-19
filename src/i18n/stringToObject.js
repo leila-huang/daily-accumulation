@@ -25,11 +25,18 @@ function readSrcFiles(srcPath) {
         const jsonStartIndex = data.indexOf("{");
         const jsonEndIndex = data.lastIndexOf("}");
         const jsonString = data.substring(jsonStartIndex, jsonEndIndex + 1);
+        // key出现没有单引号或双引号包裹+value被引号包裹 的情况表明已经被解析
+        const regex =
+          /(?<=\b)[a-zA-Z0-9_$]+(?=\b\s*:)\s*:\s*("[^"]*"|'[^']*')/g;
+        let match = regex.exec(jsonString);
+        if (Array.isArray(match)) return undefined;
         // 删除多余的文本和注释
         data = jsonString
+          // .replace(/"/g, '\"') // 将双引号转义 不生效
           .replace(/\/\/.*$/gm, "") // 删除注释部分
+          .replace(/['"]\s*\+\s*['"]/g, "") // 删除拼接字符
           .replace(/'/g, '"') // 将单引号替换为双引号
-          .replace(/,\s*}/, "}"); // 删除末尾的逗
+          .replace(/,\s*}/, "}"); // 删除末尾的逗号
         // 尝试解析为JSON
         let parsedData;
         try {
@@ -90,7 +97,7 @@ function splitKeys(obj) {
 
 const testObj = {
   "menu.system": "系统设置",
-  "menu.system.user": "用户管理",
+  "menu.system.user-management": "用户管理",
   "menu.system.user-creator": "新增用户",
   "menu.system.create-game-currency": "新增游戏币",
   "menu.system.retail-goods": "零售商品",
@@ -99,16 +106,9 @@ const testObj = {
   "menu.system.coupon": "优惠卷",
   "menu.system.create-seckill": "新增秒杀活动",
   "menu.system.package-ticket-setting": "套票设置",
-  "menu.favorite": "收藏",
 
-  // Demo
-  // 一级菜单命名规则:menu.[item.key]
-  "menu.Terminal": "终端",
-  // 非一级菜单命名规则:menu.[parent].[key]
-  "menu.Terminal.MachineManage": "游乐项目管理",
-  "menu.MachineManage.MachineTypeSet-hmtl": "项目类型管理",
-  "menu.game.machineportset": "1111",
+  "menu.favorite": "收藏",
 };
 // const newObj = splitKeys(testObj);
-// console.log('newObj',newObj)
+// console.log("newObj", newObj);
 readSrcFiles(srcPath);
