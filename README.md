@@ -5,9 +5,10 @@ Created with CodeSandbox
 ## 项目内容清单：
 
 - [ ] 递归&广度查找在xxx条数据下速度对比
-- [ ] select支持全选的hook
+- [x] select支持全选的hook
 - [ ] 深过滤、深对比、深拷贝实现
 - [ ] 判断是手机端还是PC端
+- [x] StringToObject工具：递归读取脚本所在目录下的文件并执行StringToObject操作，key按指定规则拆分成对象
 
 ## 项目成长过程
 - [x] Created with CodeSandbox
