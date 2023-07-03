@@ -5,19 +5,17 @@
  * @param func
  */
 interface INode<T> {
-  children?: T[]
-  [key: string]: any
+  children?: T[];
+  [key: string]: any;
 }
-function findNode<T extends INode<T>>(tree: T[], func: (node: T) => {}) {
-  if (!tree) return undefined
-  const list = [...tree]
+function findNode<T extends INode<T>>(tree: T[], func: (node: T) => any) {
+  if (!tree) return undefined;
+  const list = [...tree];
   for (const node of list || []) {
-    if (func(node)) return node
-    node?.children && list.push(...(node?.children || []))
+    if (func(node)) return node;
+    node?.children && list.push(...(node?.children || []));
   }
 }
-
-
 
 /**
  *  深度优先查找
@@ -26,13 +24,13 @@ function findNode<T extends INode<T>>(tree: T[], func: (node: T) => {}) {
  */
 function findDeepNode<T extends INode<T>>(
   tree: T[] | undefined,
-  func: (node: T) => {},
+  func: (node: T) => any
 ): T | undefined {
-  if (!tree) return undefined
+  if (!tree) return undefined;
   for (const node of tree || []) {
-    if (func(node)) return node
-    const _val = findDeepNode<T>(node?.children, func)
-    if (_val) return _val
+    if (func(node)) return node;
+    const _val = findDeepNode<T>(node?.children, func);
+    if (_val) return _val;
   }
 }
 
@@ -43,26 +41,26 @@ function findDeepNode<T extends INode<T>>(
  */
 function findPath<T extends INode<T>>(
   tree: T[],
-  func: (node: T) => {},
+  func: (node: T) => any
 ): T[] | undefined {
-  const list = [...(tree || [])]
-  const path = []
-  const pathSet = new Set()
+  const list = [...(tree || [])];
+  const path = [];
+  const pathSet = new Set();
   while (list.length) {
     //  队列的方式，先进先出
-    const node = list[0]
+    const node = list[0];
     //  不符合条件先清除
     if (pathSet.has(node)) {
-      path.pop()
-      list.shift()
-      continue
+      path.pop();
+      list.shift();
+      continue;
     }
-    pathSet.add(node)
-    path.push(node)
+    pathSet.add(node);
+    path.push(node);
     // 先进
-    node?.children && list.unshift(...node.children)
+    node?.children && list.unshift(...node.children);
     // 符合条件就出去啦
-    if (func(node)) return path
+    if (func(node)) return path;
   }
 }
 
@@ -70,4 +68,4 @@ export default {
   findNode,
   findDeepNode,
   findPath,
-}
+};

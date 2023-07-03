@@ -3,7 +3,7 @@ import { Button, Card, Space, Typography } from "antd";
 
 const DeepOperation: React.FC = () => {
   const [newObj, setNewObj] = useState({});
-  const obj = {
+  const obj: Record<string, any> = {
     name: "John",
     age: 30,
     address: {
@@ -12,7 +12,7 @@ const DeepOperation: React.FC = () => {
       state: "CA",
     },
   };
-  const deepFilter = (obj: object, filterKey: string[]) => {
+  const deepFilter = (obj: Record<string, any>, filterKey: string[]) => {
     if (typeof obj !== "object" || obj === null) {
       return obj;
     }

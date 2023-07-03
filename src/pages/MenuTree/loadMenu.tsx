@@ -1,82 +1,82 @@
-import TreeTools from './treeTools'
+import TreeTools from "./treeTools";
 
 enum PageType {
   // 旧的html页面
-  Html = 'html',
+  Html = "html",
   // 低代码页面
-  Lowcode = 'lowcode',
+  Lowcode = "lowcode",
   // 新页面
-  New = 'new',
+  New = "new",
   // 微应用
-  Mirco = 'mirco-app',
+  Mirco = "mirco-app",
 }
 
 export type MenuDataItem = {
   /** @name 子菜单 */
-  children?: MenuDataItem[]
-  routes?: undefined
+  children?: MenuDataItem[];
+  routes?: undefined;
   /** @name 在菜单中隐藏子节点 */
-  hideChildrenInMenu?: boolean
+  hideChildrenInMenu?: boolean;
   /** @name 在菜单中隐藏自己和子节点 */
-  hideInMenu?: boolean
+  hideInMenu?: boolean;
   /** @name 菜单的icon */
-  icon?: React.ReactNode
+  icon?: React.ReactNode;
   /** @name 自定义菜单的国际化 key */
-  locale?: string | false
+  locale?: string | false;
   /** @name 菜单的名字 */
-  name?: string
+  name?: string;
   /** @name 用于标定选中的值，默认是 path */
-  key?: string
+  key?: string;
   /** @name disable 菜单选项 */
-  disabled?: boolean
+  disabled?: boolean;
   /** @name 路径,可以设定为网页链接 */
-  path?: string
+  path?: string;
   /**
    * 当此节点被选中的时候也会选中 parentKeys 的节点
    *
    * @name 自定义父节点
    */
-  parentKeys?: string[]
+  parentKeys?: string[];
   /** @name 隐藏自己，并且将子节点提升到与自己平级 */
-  flatMenu?: boolean
+  flatMenu?: boolean;
   /** @name 指定外链打开形式，同a标签 */
-  target?: string
+  target?: string;
   /**
    * menuItem 的 tooltip 显示的路径
    */
-  tooltip?: string
-  [key: string]: any
-}
+  tooltip?: string;
+  [key: string]: any;
+};
 
 export interface IMenuData {
   /**
    * 父级name
    */
-  parent?: string
+  parent?: string;
   /**
    * 唯一标识，命名规则:中划线分割
    * 国际化语言包id，例如:设备管理 ->项目管理，[父级菜单name].[当前菜单name] (device-machine)
    */
-  name?: string
+  name?: string;
   /**
    * 默认菜单名称，当语言包没有该菜单配置时显示
    */
-  label?: string
+  label?: string;
   /**
    * 排序
    */
-  order?: number
+  order?: number;
   /**
    * 菜单icon，预留字段
    */
-  icon?: string
+  icon?: string;
   /**
    * 页面类型，可空(默认为new)
    * new: 新页面
    * html: 原有html页面
    * micro-app: 微应用 (盈客宝页面)
    */
-  type?: PageType | string
+  type?: PageType | string;
   /**
    * 页面资源，例如:
    * - 新页面路由 /game/machineset
@@ -84,9 +84,9 @@ export interface IMenuData {
    * - 盈客宝页面 http://pw.rapa.vip/integralmall-business-pc/member-centre/function-set
    * - 低代码页面shecma /admin/lowcode/xxx.json
    */
-  resource?: string
+  resource?: string;
 
-  [key: string]: any
+  [key: string]: any;
 }
 
 /**
@@ -98,11 +98,11 @@ export default function (
   num: number
 ): MenuDataItem[] {
   // menu根标识
-  const MENU_ROOT = 'menu_root'
+  const MENU_ROOT = "menu_root";
 
-  let menus: MenuDataItem[] = []
+  let menus: MenuDataItem[] = [];
 
-  const menuGroupMap = new Map<string, IMenuData[]>()
+  const menuGroupMap = new Map<string, IMenuData[]>();
 
   // 对Menus数据进行分组
   menuData.forEach((item) => {
@@ -113,23 +113,26 @@ export default function (
       .map((item) => ({
         ...item,
         ModelID: new Date().getTime() + Math.random().toString(16),
-      }))
-    const data = menuGroupMap.get(item.parent || MENU_ROOT) || []
-    menuGroupMap.set(item.parent || MENU_ROOT, [...data, ...menuItem])
-  })
+      }));
+    const data = menuGroupMap.get(item.parent || MENU_ROOT) || [];
+    menuGroupMap.set(item.parent || MENU_ROOT, [...data, ...menuItem]);
+  });
   // 组装menu树
   menuGroupMap.forEach((item, key) => {
-    const menuItem = item.sort((a, b) => (a.order || 0) - (b.order || 0))
+    const menuItem = item.sort((a, b) => (a.order || 0) - (b.order || 0));
     if (key === MENU_ROOT) {
-      menus = [...menuItem]
-      return
+      menus = [...menuItem];
+      return;
     }
 
-    const parent = TreeTools.findNode<MenuDataItem>(menus, (n) => n.key === key)
+    const parent = TreeTools.findNode<MenuDataItem>(
+      menus,
+      (n) => n.key === key
+    );
 
-    if (!parent) return
-    parent.children = [...menuItem]
-  })
+    if (!parent) return;
+    parent.children = [...menuItem];
+  });
 
-  return menus
+  return menus;
 }
