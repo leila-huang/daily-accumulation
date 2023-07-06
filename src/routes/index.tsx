@@ -1,11 +1,11 @@
 import App from "../App";
 import React from "react";
-
-import { createMemoryRouter } from "react-router";
 import { createBrowserRouter } from "react-router-dom";
 import MenuTree from "../pages/MenuTree";
 import AllWithSelect from "../pages/AllWithSelect";
 import DeepOperation from "../pages/DeepOperation";
+import HorizontalTreePage from "../pages/HorizontalTreePage";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -22,6 +22,10 @@ const router = createBrowserRouter([
   {
     path: "/DeepOperation",
     element: <DeepOperation />,
+  },
+  {
+    path: "/HorizontalTreePage",
+    element: <HorizontalTreePage />,
   },
 ]);
 

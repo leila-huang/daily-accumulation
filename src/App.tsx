@@ -15,6 +15,9 @@ export default function App() {
       <Button>
         <Link to={"/DeepOperation"}>深过滤、深对比、深拷贝实现</Link>
       </Button>
+      <Button>
+        <Link to={"/HorizontalTreePage"}>横向treeTable实现</Link>
+      </Button>
     </Card>
   );
 }

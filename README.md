@@ -9,7 +9,7 @@ Created with CodeSandbox
 - [ ] 深过滤、深对比、深拷贝实现
 - [ ] 判断是手机端还是PC端
 - [x] StringToObject工具：递归读取脚本所在目录下的文件并执行StringToObject操作，key按指定规则拆分成对象
-- [ ] 横向TreeTable
+- [x] 横向TreeTable
 ## 项目成长过程
 - [x] Created with CodeSandbox
 - [x] 加入 react-router
