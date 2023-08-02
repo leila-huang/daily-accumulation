@@ -18,6 +18,9 @@ export default function App() {
       <Button>
         <Link to={"/HorizontalTreePage"}>横向treeTable实现</Link>
       </Button>
+      <Button>
+        <Link to={"/LodashUtilsPage"}>LodashUtils实现</Link>
+      </Button>
     </Card>
   );
 }

@@ -5,6 +5,7 @@ import MenuTree from "../pages/MenuTree";
 import AllWithSelect from "../pages/AllWithSelect";
 import DeepOperation from "../pages/DeepOperation";
 import HorizontalTreePage from "../pages/HorizontalTreePage";
+import LodashUtilsPage from "../pages/LodashUtilsPage";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
   {
     path: "/HorizontalTreePage",
     element: <HorizontalTreePage />,
+  },
+  {
+    path: "/LodashUtilsPage",
+    element: <LodashUtilsPage />,
   },
 ]);
 

@@ -10,6 +10,8 @@ Created with CodeSandbox
 - [ ] 判断是手机端还是PC端
 - [x] StringToObject工具：递归读取脚本所在目录下的文件并执行StringToObject操作，key按指定规则拆分成对象
 - [x] 横向TreeTable
+- [x] lodash 实现：omit/pick
+
 ## 项目成长过程
 - [x] Created with CodeSandbox
 - [x] 加入 react-router

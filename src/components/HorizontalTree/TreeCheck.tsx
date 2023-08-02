@@ -1,10 +1,18 @@
 import React, { memo, useContext } from "react";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { Checkbox } from "antd";
-import { handleParentCheckedChange, TreeContext } from "./index";
-import { getUUID } from "../../utils/stringTools";
+import {
+  handleParentCheckedChange,
+  TreeContext,
+} from "@/components/HorizontalTree/index";
 
-const TreeCheck: React.FC<any> = ({ value, label, onChange, disabled }) => {
+const TreeCheck: React.FC<any> = ({
+  key,
+  value,
+  label,
+  onChange,
+  disabled,
+}) => {
   const { flatTreeListState, setFlatTreeListState } = useContext(TreeContext);
   const handleCheckAllChange = (e: CheckboxChangeEvent, key: string) => {
     const data = flatTreeListState[key];
@@ -75,7 +83,7 @@ const TreeCheck: React.FC<any> = ({ value, label, onChange, disabled }) => {
   return (
     <Checkbox
       disabled={disabled}
-      key={getUUID()}
+      key={key}
       indeterminate={flatTreeListState?.[value]?.halfChecked ?? false}
       onChange={(e) => handleCheckAllChange(e, value)}
       checked={flatTreeListState?.[value]?.checked}

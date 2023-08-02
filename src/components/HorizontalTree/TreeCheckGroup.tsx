@@ -4,6 +4,7 @@ import { Checkbox } from "antd";
 import { handleParentCheckedChange, TreeContext } from "./index";
 
 const TreeCheckGroup: React.FC<any> = ({
+  key,
   children,
   parentId,
   onChange,
@@ -41,6 +42,7 @@ const TreeCheckGroup: React.FC<any> = ({
 
   return (
     <Checkbox.Group
+      key={key}
       disabled={disabled}
       options={children}
       value={flatTreeListState?.[parentId]?.value ?? []}

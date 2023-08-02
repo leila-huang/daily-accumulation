@@ -1,18 +1,25 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Table } from "antd";
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
+import treeTools from "@/utils/treeTools";
+import TreeTools from "@/utils/treeTools";
+import { createStyles } from "antd-style";
 import { useSetState } from "ahooks";
-
-import { ColumnsType } from "antd/es/table";
-import TreeCheckGroup from "./TreeCheckGroup";
-import TreeCheck from "./TreeCheck";
-import TreeTools from "../../utils/treeTools";
+import TreeCheck from "@/components/HorizontalTree/TreeCheck";
+import TreeCheckGroup from "@/components/HorizontalTree/TreeCheckGroup";
 
 export const TreeContext = React.createContext<any>({});
 
 type FlatTreeListStateType = Record<
   string,
   {
-    value?: string;
+    value?: string | string[];
     parentIds?: string[];
     childrenIds?: string[];
     checked?: boolean;
@@ -29,6 +36,10 @@ type FlatTreeType = Record<
     children?: Record<string, any>[];
   }
 >;
+
+export type HorizontalTreeInstance = {
+  reload: () => void;
+};
 /**
  * 处理父级选中状态
  */
@@ -85,24 +96,62 @@ export const handleParentCheckedChange = (
   return newList;
 };
 
-/*
- *  将tree数据扁平化遍历处理，需要注意childrenName可配置，
- *  1. 扁平后数据格式{colx:FlatTreeType}
- *  2. 生成点击状态数据,参考fiber树实现 { UUID: { value: false, halfChecked: false,parent:[UUID,UUID]，children:[UUID]? }}
- *  遍历样式，最后一个使用Checkbox.Group管理
- *  处理点击和半点击状态：
- *  1.Checkbox.Group -->onChange:更新对应的点击状态，value直接赋值就可以， 同时更新上级数据：拿到options长度和当前values对比，更新value和halfChecked
- *  2.Checkbox-->onChange:更新对应的点击状态，value直接赋值就可以， 同时更新上下级数据
- *
- * */
-const HorizontalTree: React.FC<{
-  data: any;
-  searchData: string;
-  checkedData?: string[];
-  disabled?: boolean;
-  onChange?: (value: FlatTreeListStateType) => void;
-}> = ({ data, searchData, checkedData, disabled, onChange }) => {
-  // todo flatTreeListState 长度超过100条会出现比较明显的卡顿，还未做优化。
+const useStyles = createStyles(({ css, token }) => {
+  return {
+    container: css`
+      & > td {
+        padding: 4px !important;
+      }
+    `,
+    disabled: css`
+      /*      cursor: not-allowed;
+      pointer-events: none;
+      opacity: 0.5;*/
+
+      .ant-checkbox-wrapper {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        &:after {
+          display: none;
+        }
+      }
+
+      .ant-checkbox-input {
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+
+      .ant-checkbox-inner {
+        background: ${token.colorBgContainerDisabled};
+        border-color: ${token.colorBorder};
+
+        &:after {
+          border-color: ${token.colorTextDisabled};
+        }
+      }
+
+      .ant-checkbox-indeterminate .ant-checkbox-inner::after {
+        background: ${token.colorTextDisabled};
+      }
+
+      .ant-checkbox + span {
+        color: ${token.colorTextDisabled};
+      }
+    `,
+  };
+});
+const HorizontalTree: React.ForwardRefRenderFunction<
+  HorizontalTreeInstance,
+  {
+    data: any;
+    searchData: string;
+    checkedData?: string[];
+    disabled?: boolean;
+    onChange?: (value: FlatTreeListStateType, init?: boolean) => void;
+  }
+> = ({ data, searchData, checkedData, disabled, onChange }, ref) => {
+  const { styles, cx } = useStyles();
   const [flatTreeListState, setFlatTreeListState] =
     useSetState<FlatTreeListStateType>({});
   const [firstRow, setFirstRow] = useState<Record<string, any>>();
@@ -135,7 +184,6 @@ const HorizontalTree: React.FC<{
             childrenMenusName,
             (n) => n.Id === item?.Id
           );
-          // console.log('path', path)
 
           const obj: FlatTreeType | undefined = path?.reduce(
             (prev: FlatTreeType, curr: Record<string, any>, index: number) => {
@@ -176,15 +224,17 @@ const HorizontalTree: React.FC<{
 
         // 将数据拍平存放到object
         const firstId = item?.Id;
-        const parentIds = TreeTools.findAssignChildrenPath<any>(
-          data,
-          childrenMenusName,
-          (n) => n?.Id === firstId
-        )?.map((item) => item?.Id);
+        const parentIds = treeTools
+          .findAssignChildrenPath<any>(
+            data,
+            childrenMenusName,
+            (n) => n?.Id === firstId
+          )
+          ?.map((item) => item?.Id);
         const childrenIds: string[] = [];
 
         // 遍历指定子属性
-        TreeTools.forEachAssignChildren<any>(
+        treeTools.forEachAssignChildren<any>(
           child,
           childrenMenusName?.slice(childrenLevel, childrenMenusName.length),
           (n) => n?.Id && childrenIds.push(n.Id)
@@ -200,7 +250,6 @@ const HorizontalTree: React.FC<{
         };
         // 初始化flatTreeState
         flatTreeState[item.Id] = newState;
-
         if (isEndLevel) {
           // 处理已选中数据
           const checkedValue =
@@ -218,7 +267,6 @@ const HorizontalTree: React.FC<{
           };
           // 在更新一次末端节点数据
           flatTreeState[item.Id] = newState;
-
           // 处理节点 关联的父节点
           const newFlatTreeState = handleParentCheckedChange(
             newState,
@@ -240,16 +288,109 @@ const HorizontalTree: React.FC<{
     return tree;
   };
   useEffect(() => {
-    setFlatTree(getFlatTree());
+    const initData = getFlatTree();
+    setFlatTree(initData);
   }, []);
+  /**
+   * 初始化选中数据
+   */
+  const initCheckedData = useCallback(
+    (checkedList: string[]) => {
+      const checks = [...(checkedList ?? [])];
+      // 更新闭包数据，避免useState异步更新
+      let newList = {
+        ...flatTreeListState,
+      };
+      for (const flatTreeStateKey in flatTreeListState) {
+        // 只有最后一层数据带有value
+        if (
+          Object.getPrototypeOf(flatTreeListState[flatTreeStateKey]) &&
+          Array.isArray(flatTreeListState[flatTreeStateKey]?.value)
+        ) {
+          const child = flatTreeListState[flatTreeStateKey]?.childrenIds ?? [];
+          const checkedValue =
+            checks?.filter((item) => child?.some((v: string) => v === item)) ??
+            [];
+          // 减少forEach
+          if (
+            checks.length > 0 &&
+            (!checkedValue ||
+              (checkedValue?.length === 0 &&
+                flatTreeListState[flatTreeStateKey]?.value?.length === 0))
+          ) {
+            continue;
+          }
+          const checked = child?.length === checkedValue?.length;
+          const halfChecked =
+            checkedValue.length > 0 && checkedValue?.length < child?.length;
 
+          const newChildrenData = {
+            ...flatTreeListState[flatTreeStateKey],
+            value: checkedValue,
+            checked,
+            halfChecked,
+          };
+          setFlatTreeListState({
+            [flatTreeStateKey]: newChildrenData,
+          });
+          newList = {
+            ...newList,
+            [flatTreeStateKey]: newChildrenData,
+          };
+          // 处理节点 关联的父节点
+          newList = handleParentCheckedChange(
+            newChildrenData,
+            newList,
+            halfChecked,
+            setFlatTreeListState
+          );
+
+          //   filter掉已经处理的数据
+          checks?.filter(
+            (item) => !checkedValue?.some((v: string) => v === item)
+          );
+        }
+      }
+      onChange?.(newList ?? [], true);
+    },
+    [flatTreeListState]
+  );
+  /**
+   *
+   * 页面数据切换时调用
+   */
+  useEffect(() => {
+    initCheckedData(checkedData ?? []);
+  }, [checkedData]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      reload() {
+        initCheckedData([]);
+      },
+    }),
+    [flatTreeListState]
+  );
   /**
    * 过滤搜索内容
    */
   const filterSearch = (data: FlatTreeType[], value: string) => {
     return data?.filter((item) => {
-      const itemStr = JSON.stringify(item);
-      return itemStr.includes(value);
+      let hasValue = false;
+      for (const itemStrKey in item) {
+        if (Object.getPrototypeOf(item[itemStrKey])) {
+          if (item[itemStrKey]?.label?.includes?.(value)) {
+            hasValue = true;
+          }
+          if (
+            item[itemStrKey]?.children?.some((i) => i?.label?.includes?.(value))
+          ) {
+            hasValue = true;
+          }
+        }
+      }
+      return hasValue;
     });
   };
 
@@ -293,8 +434,11 @@ const HorizontalTree: React.FC<{
    */
   const flatTreeList = useMemo(() => {
     const newData = filterSearch(flatTree, searchData);
-    return changeRowspan(newData);
+    const mergeData = changeRowspan(newData);
+
+    return mergeData;
   }, [flatTree, searchData]);
+
   /**
    * 赋值column的rowspan
    * @param record
@@ -320,7 +464,7 @@ const HorizontalTree: React.FC<{
               key={record?.value}
               {...record}
               onChange={onChange}
-              disabled={disabled}
+              // disabled={disabled}
             />
           );
         },
@@ -333,10 +477,10 @@ const HorizontalTree: React.FC<{
           render: (record: Record<string, any>) => {
             return (
               <TreeCheckGroup
-                key={record?.parentId}
+                key={record?.parentId + index}
                 {...record}
                 onChange={onChange}
-                disabled={disabled}
+                // disabled={disabled}
               />
             );
           },
@@ -345,17 +489,21 @@ const HorizontalTree: React.FC<{
     });
     return columns;
   }, [disabled, firstRow, onChange]);
+
   return (
     <TreeContext.Provider value={{ flatTreeListState, setFlatTreeListState }}>
       <Table
+        // 比直接在子组件处理disabled快一点点
+        rowClassName={cx(styles.container, disabled ? styles.disabled : "")}
         showHeader={false}
         columns={getColumns}
         dataSource={flatTreeList}
         bordered
         pagination={false}
+        // scroll={{ y: 480 }}
       />
     </TreeContext.Provider>
   );
 };
 
-export default HorizontalTree;
+export default memo(forwardRef(HorizontalTree));
